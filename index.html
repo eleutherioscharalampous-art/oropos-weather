@@ -372,700 +372,674 @@
     box-shadow:0 0 12px #00d4ff77;
     z-index:900;
 ">💬 Chat</button>
-
 <script>
-    // 🌍 GLOBAL VARS
-    let forecastGlobal = null;
-    let comboChartInstance = null;
-    let currentLat = 38.0972, currentLon = 23.7736, currentName = 'Ωρωπός';
-    let notificationEnabled = false;
+// 🌍 GLOBAL VARS
+let forecastGlobal = null;
+let comboChartInstance = null;
+let currentLat = 38.0972, currentLon = 23.7736, currentName = 'Ωρωπός';
+let notificationEnabled = false;
 
-    const AREAS = [
-        { name: 'Αθήνα – Κέντρο', lat: 37.9838, lon: 23.7275 },
-        { name: 'Αφίδνες', lat: 38.212, lon: 23.83 },
-        { name: 'Άγιος Στέφανος', lat: 38.145, lon: 23.855 },
-        { name: 'Διόνυσος', lat: 38.095, lon: 23.87 },
-        { name: 'Ερέτρια (Εύβοια)', lat: 38.395, lon: 23.803 },
-        { name: 'Ιπποκράτειος Πολιτεία', lat: 38.206, lon: 23.83 },
-        { name: 'Καντρίτι (Καπανδρίτι περίπου)', lat: 38.214, lon: 23.83 },
-        { name: 'Κερατσίνι', lat: 37.963, lon: 23.619 },
-        { name: 'Κηφισιά', lat: 38.074, lon: 23.811 },
-        { name: 'Κρυονέρι', lat: 38.143, lon: 23.822 },
-        { name: 'Μαλακάσα', lat: 38.24, lon: 23.78 },
-        { name: 'Μαντούδι (Εύβοια)', lat: 38.79, lon: 23.35 },
-        { name: 'Μαρούσι', lat: 38.016, lon: 23.797 },
-        { name: 'Ν. Μάκρη', lat: 38.086, lon: 23.98 },
-        { name: 'Οινόφυτα', lat: 38.3, lon: 23.65 },
-        { name: 'Ωρωπός', lat: 38.0972, lon: 23.7736 },
-        { name: 'Πειραιάς', lat: 37.942, lon: 23.646 },
-        { name: 'Ψαχνά (Εύβοια)', lat: 38.58, lon: 23.65 },
-        { name: 'Ραφήνα', lat: 38.02, lon: 24.005 }
-    ];
+const AREAS = [
+    { name: 'Αθήνα – Κέντρο', lat: 37.9838, lon: 23.7275 },
+    { name: 'Αφίδνες', lat: 38.212, lon: 23.83 },
+    { name: 'Άγιος Στέφανος', lat: 38.145, lon: 23.855 },
+    { name: 'Διόνυσος', lat: 38.095, lon: 23.87 },
+    { name: 'Ερέτρια (Εύβοια)', lat: 38.395, lon: 23.803 },
+    { name: 'Ιπποκράτειος Πολιτεία', lat: 38.206, lon: 23.83 },
+    { name: 'Καντρίτι (Καπανδρίτι περίπου)', lat: 38.214, lon: 23.83 },
+    { name: 'Κερατσίνι', lat: 37.963, lon: 23.619 },
+    { name: 'Κηφισιά', lat: 38.074, lon: 23.811 },
+    { name: 'Κρυονέρι', lat: 38.143, lon: 23.822 },
+    { name: 'Μαλακάσα', lat: 38.24, lon: 23.78 },
+    { name: 'Μαντούδι (Εύβοια)', lat: 38.79, lon: 23.35 },
+    { name: 'Μαρούσι', lat: 38.016, lon: 23.797 },
+    { name: 'Ν. Μάκρη', lat: 38.086, lon: 23.98 },
+    { name: 'Οινόφυτα', lat: 38.3, lon: 23.65 },
+    { name: 'Ωρωπός', lat: 38.0972, lon: 23.7736 },
+    { name: 'Πειραιάς', lat: 37.942, lon: 23.646 },
+    { name: 'Ψαχνά (Εύβοια)', lat: 38.58, lon: 23.65 },
+    { name: 'Ραφήνα', lat: 38.02, lon: 24.005 }
+];
 
-    // Πληροφορίες Πολιτικής Προστασίας ανά φαινόμενο
-    const PHENOMENON_INFO = {
-        storm: {
-            icon: "⛈️",
-            title: "Ισχυρές καταιγίδες / έντονη βροχή",
-            tips: [
-                "Απόφυγε μετακινήσεις σε ρέματα, χειμάρρους και πλημμυρισμένους δρόμους.",
-                "Μη διασχίζεις δρόμους με πολλά νερά πεζός ή με όχημα.",
-                "Απόφυγε εργασίες υπαίθρου και παραμονή σε παραλίες κατά τη διάρκεια της καταιγίδας.",
-                "Ασφάλισε αντικείμενα που μπορεί να παρασυρθούν από τον άνεμο.",
-                "Ακολούθησε τις οδηγίες των τοπικών Αρχών και τα μηνύματα 112."
-            ],
-            link: "https://civilprotection.gov.gr/odigies-prostasias/kataigides"
-        },
-        snow: {
-            icon: "🌨️",
-            title: "Χιονοπτώσεις / παγετός",
-            tips: [
-                "Απόφυγε άσκοπες μετακινήσεις σε ορεινές ή ημιορεινές περιοχές.",
-                "Χρησιμοποίησε αντιολισθητικές αλυσίδες όπου χρειάζεται.",
-                "Ντύσου με πολλά, ζεστά ρούχα και κάλυψε κεφάλι και άκρα.",
-                "Πρόσεχε για πάγο σε πεζοδρόμια και σκάλες.",
-                "Άκου τις οδηγίες της Τροχαίας και της Πολιτικής Προστασίας."
-            ],
-            link: "https://civilprotection.gov.gr/odigies-prostasias/chionoptoseis-pagetos"
-        },
-        wind: {
-            icon: "💨",
-            title: "Θυελλώδεις άνεμοι",
-            tips: [
-                "Ασφάλισε αντικείμενα σε μπαλκόνια και ταράτσες που μπορεί να παρασυρθούν.",
-                "Μη στέκεσαι κάτω από μεγάλα δέντρα ή πινακίδες.",
-                "Απόφυγε δραστηριότητες σε θάλασσα και παράκτιες περιοχές.",
-                "Στάθμευσε το όχημα μακριά από δέντρα και κολώνες.",
-                "Ακολούθησε τις ανακοινώσεις Πολιτικής Προστασίας."
-            ],
-            link: "https://civilprotection.gov.gr/odigies-prostasias/thyellodeis-anemoi"
-        },
-        heat: {
-            icon: "🔥",
-            title: "Υψηλές θερμοκρασίες / καύσωνας",
-            tips: [
-                "Μείνε σε δροσερούς, σκιερούς και κλιματιζόμενους χώρους.",
-                "Πίνε άφθονα υγρά, απόφυγε αλκοόλ και βαριά γεύματα.",
-                "Απόφυγε βαριά σωματική εργασία και άθληση τις θερμές ώρες.",
-                "Φρόντισε ιδιαίτερα βρέφη, ηλικιωμένους και ευπαθείς ομάδες.",
-                "Επικοινώνησε με γιατρό αν εμφανίσεις συμπτώματα θερμοπληξίας."
-            ],
-            link: "https://civilprotection.gov.gr/odigies-prostasias/kaysonas"
-        },
-        flood: {
-            icon: "🌊",
-            title: "Κίνδυνος πλημμυρών",
-            tips: [
-                "Μη διασχίζεις πλημμυρισμένους δρόμους ή ιρλανδικές διαβάσεις.",
-                "Μη μένεις σε υπόγεια ή ημιυπόγεια που μπορεί να πλημμυρίσουν.",
-                "Μετακίνησε αντικείμενα σε ψηλότερο επίπεδο αν είσαι σε επικίνδυνη ζώνη.",
-                "Κλείσε ρεύμα και νερό αν σου το συστήσουν οι Αρχές.",
-                "Άκου προσεκτικά τα μηνύματα 112 και τις οδηγίες των τοπικών φορέων."
-            ],
-            link: "https://civilprotection.gov.gr/odigies-prostasias/plimmyres"
-        }
-    };
-
-    // Ασφαλές fetch για Android/WebView
-    async function safeFetch(url) {
-        try {
-            return await fetch(url);
-        } catch (e) {
-            try {
-                return await fetch(url, { mode: "cors" });
-            } catch (e2) {
-                throw e2;
-            }
-        }
+// Πληροφορίες Πολιτικής Προστασίας
+const PHENOMENON_INFO = {
+    storm: {
+        icon: "⛈️",
+        title: "Ισχυρές καταιγίδες / έντονη βροχή",
+        tips: [
+            "Απόφυγε μετακινήσεις σε ρέματα, χειμάρρους και πλημμυρισμένους δρόμους.",
+            "Μη διασχίζεις δρόμους με πολλά νερά πεζός ή με όχημα.",
+            "Απόφυγε εργασίες υπαίθρου και παραμονή σε παραλίες κατά τη διάρκεια της καταιγίδας.",
+            "Ασφάλισε αντικείμενα που μπορεί να παρασυρθούν από τον άνεμο.",
+            "Ακολούθησε τις οδηγίες των τοπικών Αρχών και τα μηνύματα 112."
+        ],
+        link: "https://civilprotection.gov.gr/odigies-prostasias/kataigides"
+    },
+    snow: {
+        icon: "🌨️",
+        title: "Χιονοπτώσεις / παγετός",
+        tips: [
+            "Απόφυγε άσκοπες μετακινήσεις σε ορεινές ή ημιορεινές περιοχές.",
+            "Χρησιμοποίησε αντιολισθητικές αλυσίδες όπου χρειάζεται.",
+            "Ντύσου με πολλά, ζεστά ρούχα και κάλυψε κεφάλι και άκρα.",
+            "Πρόσεχε για πάγο σε πεζοδρόμια και σκάλες.",
+            "Άκου τις οδηγίες της Τροχαίας και της Πολιτικής Προστασίας."
+        ],
+        link: "https://civilprotection.gov.gr/odigies-prostasias/chionoptoseis-pagetos"
+    },
+    wind: {
+        icon: "💨",
+        title: "Θυελλώδεις άνεμοι",
+        tips: [
+            "Ασφάλισε αντικείμενα σε μπαλκόνια και ταράτσες που μπορεί να παρασυρθούν.",
+            "Μη στέκεσαι κάτω από μεγάλα δέντρα ή πινακίδες.",
+            "Απόφυγε δραστηριότητες σε θάλασσα και παράκτιες περιοχές.",
+            "Στάθμευσε το όχημα μακριά από δέντρα και κολώνες.",
+            "Ακολούθησε τις ανακοινώσεις Πολιτικής Προστασίας."
+        ],
+        link: "https://civilprotection.gov.gr/odigies-prostasias/thyellodeis-anemoi"
+    },
+    heat: {
+        icon: "🔥",
+        title: "Υψηλές θερμοκρασίες / καύσωνας",
+        tips: [
+            "Μείνε σε δροσερούς, σκιερούς και κλιματιζόμενους χώρους.",
+            "Πίνε άφθονα υγρά, απόφυγε αλκοόλ και βαριά γεύματα.",
+            "Απόφυγε βαριά σωματική εργασία και άθληση τις θερμές ώρες.",
+            "Φρόντισε ιδιαίτερα βρέφη, ηλικιωμένους και ευπαθείς ομάδες.",
+            "Επικοινώνησε με γιατρό αν εμφανίσεις συμπτώματα θερμοπληξίας."
+        ],
+        link: "https://civilprotection.gov.gr/odigies-prostasias/kaysonas"
+    },
+    flood: {
+        icon: "🌊",
+        title: "Κίνδυνος πλημμυρών",
+        tips: [
+            "Μη διασχίζεις πλημμυρισμένους δρόμους ή ιρλανδικές διαβάσεις.",
+            "Μη μένεις σε υπόγεια ή ημιυπόγεια που μπορεί να πλημμυρίσουν.",
+            "Μετακίνησε αντικείμενα σε ψηλότερο επίπεδο αν είσαι σε επικίνδυνη ζώνη.",
+            "Κλείσε ρεύμα και νερό αν σου το συστήσουν οι Αρχές.",
+            "Άκου προσεκτικά τα μηνύματα 112 και τις οδηγίες των τοπικών φορέων."
+        ],
+        link: "https://civilprotection.gov.gr/odigies-prostasias/plimmyres"
     }
+};
 
-    // 🚨 NOTIFICATIONS
-    async function initNotifications() {
+// Απλός έλεγχος ειδοποιήσεων (χωρίς να επηρεάζει τα fetch)
+async function initNotifications() {
+    try {
         if ('Notification' in window && Notification.permission === 'default') {
             const perm = await Notification.requestPermission();
             notificationEnabled = perm === 'granted';
         } else if ('Notification' in window && Notification.permission === 'granted') {
             notificationEnabled = true;
         }
+    } catch (e) {
+        notificationEnabled = false;
+    }
+}
+
+function sendNotification(title, body) {
+    if (notificationEnabled && 'Notification' in window && Notification.permission === 'granted') {
+        new Notification(title, { body: body });
+    }
+}
+
+// --------- ΒΟΗΘΗΤΙΚΕΣ ΣΥΝΑΡΤΗΣΕΙΣ ---------
+function weatherEmojiAndName(code) {
+    if ([0].includes(code)) return { emoji: "☀️", name: "Αίθριος" };
+    if ([1,2,3].includes(code)) return { emoji: "🌤️", name: "Λίγες νεφώσεις" };
+    if ([45,48].includes(code)) return { emoji: "🌫️", name: "Ομίχλη" };
+    if ([51,53,55,61,63,65,80,81,82].includes(code)) return { emoji: "🌧️", name: "Βροχές" };
+    if ([71,73,75,85,86].includes(code)) return { emoji: "🌨️", name: "Χιονοπτώσεις" };
+    if ([95,96,99].includes(code)) return { emoji: "⛈️", name: "Καταιγίδες" };
+    return { emoji: "❔", name: "Καιρός" };
+}
+
+function buildAnalysisText(data) {
+    const d = data.daily;
+    const todayMax = d.temperature_2m_max[0];
+    const todayMin = d.temperature_2m_min[0];
+    const todayRain = d.precipitation_sum[0];
+    const todayWind = d.wind_speed_10m_max[0];
+    const todayCode = d.weathercode[0];
+    const w = weatherEmojiAndName(todayCode);
+
+    const max15 = Math.max(...d.temperature_2m_max.slice(0,15));
+    const min15 = Math.min(...d.temperature_2m_min.slice(0,15));
+    const totalRain = d.precipitation_sum.slice(0,15).reduce((a,b)=>a+b,0);
+
+    let txt = "";
+    txt += `Περιοχή: ${currentName}\n`;
+    txt += `Σήμερα: ${w.emoji} ${w.name}\n`;
+    txt += `Θερμοκρασία: από ${todayMin.toFixed(1)}°C έως ${todayMax.toFixed(1)}°C.\n`;
+    txt += `Βροχόπτωση: ~${todayRain.toFixed(1)} mm / Άνεμος έως ${todayWind.toFixed(0)} km/h.\n\n`;
+    txt += `Επόμενες 15 ημέρες:\n`;
+    txt += `• Μέγιστη θερμοκρασία φτάνει περίπου έως ${max15.toFixed(1)}°C.\n`;
+    txt += `• Ελάχιστη έως περίπου ${min15.toFixed(1)}°C.\n`;
+
+    if (totalRain > 40) {
+        txt += `• Αυξημένη συνολική βροχόπτωση (~${totalRain.toFixed(1)} mm), προσοχή σε πλημμυρικά φαινόμενα.\n`;
+    } else if (totalRain > 10) {
+        txt += `• Περίοδοι με κάποιες βροχές (~${totalRain.toFixed(1)} mm συνολικά).\n`;
+    } else {
+        txt += `• Περιορισμένες βροχές συνολικά (~${totalRain.toFixed(1)} mm).\n`;
     }
 
-    function sendNotification(title, body) {
-        if (notificationEnabled && 'Notification' in window && Notification.permission === 'granted') {
-            new Notification(title, { body: body });
-        }
-    }
+    txt += `\nΟι ενδείξεις είναι ενδεικτικές. Για επίσημες προειδοποιήσεις: ΕΜΥ, Πολιτική Προστασία, 112.`;
+    return txt;
+}
 
-    // 📊 COMBO CHART
-    function renderComboChart(data) {
-        const ctx = document.getElementById('comboChart').getContext('2d');
-        const days = data.daily.time.slice(0,15);
-        const tmax = data.daily.temperature_2m_max.slice(0,15);
-        const rain = data.daily.precipitation_sum?.slice(0,15) || Array(15).fill(0);
-        const wind = data.daily.wind_speed_10m_max?.slice(0,15) || Array(15).fill(0);
+function computeDaySeverity(maxT, rain, wind, snow) {
+    let level = 0;
+    if (rain >= 20 || wind >= 65 || maxT >= 37 || snow >= 5) level = 2;
+    if (rain >= 40 || wind >= 80 || maxT >= 40 || snow >= 15) level = 3;
+    if ((rain >= 5 && rain < 20) || (wind >= 45 && wind < 65) || (maxT >= 32 && maxT < 37)) level = Math.max(level,1);
+    return level;
+}
 
-        if (comboChartInstance) comboChartInstance.destroy();
+function renderComboChart(data) {
+    const ctx = document.getElementById('comboChart').getContext('2d');
+    const days = data.daily.time.slice(0,15);
+    const tmax = data.daily.temperature_2m_max.slice(0,15);
+    const rain = data.daily.precipitation_sum?.slice(0,15) || Array(15).fill(0);
+    const wind = data.daily.wind_speed_10m_max?.slice(0,15) || Array(15).fill(0);
 
-        comboChartInstance = new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: days,
-                datasets: [
-                    {
-                        label: 'Θερμοκρασία Max (°C)',
-                        data: tmax,
-                        borderColor: '#00d4ff',
-                        backgroundColor: 'rgba(0,212,255,0.1)',
-                        yAxisID: 'y',
-                        tension: 0.3,
-                        fill: false
-                    },
-                    {
-                        label: 'Βροχή (mm)',
-                        data: rain,
-                        borderColor: '#ff6b81',
-                        backgroundColor: 'rgba(255,107,129,0.3)',
-                        yAxisID: 'y1',
-                        type: 'bar',
-                        order: 1
-                    },
-                    {
-                        label: 'Άνεμος Max (km/h)',
-                        data: wind,
-                        borderColor: '#ffa502',
-                        backgroundColor: 'rgba(255,165,2,0.15)',
-                        yAxisID: 'y1',
-                        tension: 0.3,
-                        fill: false,
-                        order: 2
-                    }
-                ]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: {
-                    x: { 
-                        ticks: { 
-                            autoSkip: true, 
-                            maxTicksLimit: 10,
-                            font: { size: 11 }
-                        }
-                    },
-                    y: {
-                        type: 'linear',
-                        display: true,
-                        position: 'left',
-                        title: { 
-                            display: true, 
-                            text: 'Θερμοκρασία (°C)',
-                            font: { size: 12 }
-                        }
-                    },
-                    y1: {
-                        type: 'linear',
-                        display: true,
-                        position: 'right',
-                        grid: { drawOnChartArea: false },
-                        title: { 
-                            display: true, 
-                            text: 'Βροχή (mm) / Άνεμος (km/h)',
-                            font: { size: 12 }
-                        }
+    if (comboChartInstance) comboChartInstance.destroy();
+
+    comboChartInstance = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: days,
+            datasets: [
+                {
+                    label: 'Θερμοκρασία Max (°C)',
+                    data: tmax,
+                    borderColor: '#00d4ff',
+                    backgroundColor: 'rgba(0,212,255,0.1)',
+                    yAxisID: 'y',
+                    tension: 0.3,
+                    fill: false
+                },
+                {
+                    label: 'Βροχή (mm)',
+                    data: rain,
+                    borderColor: '#ff6b81',
+                    backgroundColor: 'rgba(255,107,129,0.3)',
+                    yAxisID: 'y1',
+                    type: 'bar',
+                    order: 1
+                },
+                {
+                    label: 'Άνεμος Max (km/h)',
+                    data: wind,
+                    borderColor: '#ffa502',
+                    backgroundColor: 'rgba(255,165,2,0.15)',
+                    yAxisID: 'y1',
+                    tension: 0.3,
+                    fill: false,
+                    order: 2
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                x: { 
+                    ticks: { 
+                        autoSkip: true, 
+                        maxTicksLimit: 10,
+                        font: { size: 11 }
                     }
                 },
-                plugins: {
-                    legend: { 
-                        labels: { 
-                            font: { size: 11 },
-                            padding: 20
-                        } 
-                    },
-                    tooltip: {
-                        callbacks: {
-                            label: ctx => {
-                                const unit = ctx.datasetIndex === 0 ? '°C' : 
-                                           ctx.datasetIndex === 1 ? 'mm' : 'km/h';
-                                return ` ${ctx.parsed.y} ${unit}`;
-                            }
+                y: {
+                    type: 'linear',
+                    display: true,
+                    position: 'left',
+                    title: { display: true, text: 'Θερμοκρασία (°C)', font: { size: 12 } }
+                },
+                y1: {
+                    type: 'linear',
+                    display: true,
+                    position: 'right',
+                    grid: { drawOnChartArea: false },
+                    title: { display: true, text: 'Βροχή (mm) / Άνεμος (km/h)', font: { size: 12 } }
+                }
+            },
+            plugins: {
+                legend: { labels: { font: { size: 11 }, padding: 20 } },
+                tooltip: {
+                    callbacks: {
+                        label: ctx => {
+                            const unit = ctx.datasetIndex === 0 ? '°C' :
+                                         ctx.datasetIndex === 1 ? 'mm' : 'km/h';
+                            return ` ${ctx.parsed.y} ${unit}`;
                         }
                     }
                 }
             }
-        });
-    }
-
-    function weatherEmojiAndName(code) {
-        if ([0].includes(code)) return { emoji: "☀️", name: "Αίθριος" };
-        if ([1,2,3].includes(code)) return { emoji: "🌤️", name: "Λίγες νεφώσεις" };
-        if ([45,48].includes(code)) return { emoji: "🌫️", name: "Ομίχλη" };
-        if ([51,53,55,61,63,65,80,81,82].includes(code)) return { emoji: "🌧️", name: "Βροχές" };
-        if ([71,73,75,85,86].includes(code)) return { emoji: "🌨️", name: "Χιονοπτώσεις" };
-        if ([95,96,99].includes(code)) return { emoji: "⛈️", name: "Καταιγίδες" };
-        return { emoji: "❔", name: "Καιρός" };
-    }
-
-    function buildAnalysisText(data) {
-        const d = data.daily;
-        const todayMax = d.temperature_2m_max[0];
-        const todayMin = d.temperature_2m_min[0];
-        const todayRain = d.precipitation_sum[0];
-        const todayWind = d.wind_speed_10m_max[0];
-        const todayCode = d.weathercode[0];
-        const w = weatherEmojiAndName(todayCode);
-
-        const max15 = Math.max(...d.temperature_2m_max.slice(0,15));
-        const min15 = Math.min(...d.temperature_2m_min.slice(0,15));
-
-        let txt = "";
-        txt += `Περιοχή: ${currentName}\n`;
-        txt += `Σήμερα: ${w.emoji} ${w.name}\n`;
-        txt += `Θερμοκρασία: από ${todayMin.toFixed(1)}°C έως ${todayMax.toFixed(1)}°C.\n`;
-        txt += `Βροχόπτωση: ~${todayRain.toFixed(1)} mm / Άνεμος έως ${todayWind.toFixed(0)} km/h.\n\n`;
-        txt += `Επόμενες 15 ημέρες:\n`;
-        txt += `• Μέγιστη θερμοκρασία φτάνει περίπου έως ${max15.toFixed(1)}°C.\n`;
-        txt += `• Ελάχιστη έως περίπου ${min15.toFixed(1)}°C.\n`;
-
-        const totalRain = d.precipitation_sum.slice(0,15).reduce((a,b)=>a+b,0);
-        if (totalRain > 40) {
-            txt += `• Αυξημένη συνολική βροχόπτωση (~${totalRain.toFixed(1)} mm), προσοχή σε πλημμυρικά φαινόμενα.\n`;
-        } else if (totalRain > 10) {
-            txt += `• Περίοδοι με κάποιες βροχές (~${totalRain.toFixed(1)} mm συνολικά).\n`;
-        } else {
-            txt += `• Περιορισμένες βροχές συνολικά (~${totalRain.toFixed(1)} mm).\n`;
         }
+    });
+}
 
-        txt += `\nΟι ενδείξεις είναι ενδεικτικές. Για επίσημες προειδοποιήσεις: ΕΜΥ, Πολιτική Προστασία, 112.`;
-        return txt;
-    }
+function renderDaysGrid(data) {
+    const grid = document.getElementById('daysGrid');
+    const d = data.daily;
+    grid.innerHTML = "";
 
-    function renderDaysGrid(data) {
-        const grid = document.getElementById('daysGrid');
-        const d = data.daily;
-        grid.innerHTML = "";
+    for (let i = 0; i < 15; i++) {
+        const date = d.time[i];
+        const max = d.temperature_2m_max[i];
+        const min = d.temperature_2m_min[i];
+        const rain = d.precipitation_sum[i];
+        const wind = d.wind_speed_10m_max[i];
+        const code = d.weathercode[i];
+        const snow = d.snowfall_sum ? d.snowfall_sum[i] : 0;
 
-        for (let i = 0; i < 15; i++) {
-            const date = d.time[i];
-            const max = d.temperature_2m_max[i];
-            const min = d.temperature_2m_min[i];
-            const rain = d.precipitation_sum[i];
-            const wind = d.wind_speed_10m_max[i];
-            const code = d.weathercode[i];
-            const snow = d.snowfall_sum ? d.snowfall_sum[i] : 0;
+        const w = weatherEmojiAndName(code);
+        const sev = computeDaySeverity(max, rain, wind, snow);
 
-            const w = weatherEmojiAndName(code);
-            const sev = computeDaySeverity(max, rain, wind, snow);
+        const sevLabel = ["Χαμηλή", "Μέτρια", "Υψηλή", "Πολύ υψηλή"][sev];
+        const sevColor = ["#2ed573", "#ffe66d", "#ffa502", "#ff4757"][sev];
 
-            const sevLabel = ["Χαμηλή", "Μέτρια", "Υψηλή", "Πολύ υψηλή"][sev];
-            const sevColor = ["#2ed573", "#ffe66d", "#ffa502", "#ff4757"][sev];
-
-            grid.innerHTML += `
-                <div class="day-card" style="border-color: ${sevColor}33;">
-                    <div class="day-header">
-                        <div class="day-date">${date}</div>
-                        <div class="day-emoji">${w.emoji}</div>
-                    </div>
-                    <div class="metric-row">Θ: ${min.toFixed(1)}°C – ${max.toFixed(1)}°C</div>
-                    <div class="metric-row">Βροχή: ${rain.toFixed(1)} mm</div>
-                    <div class="metric-row">Άνεμος: έως ${wind.toFixed(0)} km/h</div>
-                    ${snow && snow > 0 ? `<div class="metric-row">Χιόνι: ${snow.toFixed(1)} cm</div>` : ""}
-                    <div class="metric-row">Επικινδυνότητα: <b style="color:${sevColor}">${sevLabel}</b></div>
+        grid.innerHTML += `
+            <div class="day-card" style="border-color: ${sevColor}33;">
+                <div class="day-header">
+                    <div class="day-date">${date}</div>
+                    <div class="day-emoji">${w.emoji}</div>
                 </div>
-            `;
-        }
-    }
-
-    function computeDaySeverity(maxT, rain, wind, snow) {
-        let level = 0;
-        if (rain >= 20 || wind >= 65 || maxT >= 37 || snow >= 5) level = 2;
-        if (rain >= 40 || wind >= 80 || maxT >= 40 || snow >= 15) level = 3;
-        if ((rain >= 5 && rain < 20) || (wind >= 45 && wind < 65) || (maxT >= 32 && maxT < 37)) level = Math.max(level,1);
-        return level;
-    }
-
-    function analyzeDangerousConditions(data) {
-        const d = data.daily;
-        const events = [];
-
-        for (let i = 0; i < Math.min(4, d.time.length); i++) {
-            const date = d.time[i];
-            const maxT = d.temperature_2m_max[i];
-            const rain = d.precipitation_sum[i];
-            const wind = d.wind_speed_10m_max[i];
-            const snow = d.snowfall_sum ? d.snowfall_sum[i] : 0;
-
-            if (rain >= 20) {
-                events.push({
-                    type: rain >= 40 ? "flood" : "storm",
-                    level: rain >= 40 ? 3 : 2,
-                    date,
-                    text: `Πολύ βροχερή ημέρα (${rain.toFixed(1)} mm). Αυξημένος κίνδυνος πλημμυρών σε ευαίσθητες περιοχές.`
-                });
-            }
-            if (wind >= 65) {
-                events.push({
-                    type: "wind",
-                    level: wind >= 80 ? 3 : 2,
-                    date,
-                    text: `Θυελλώδεις άνεμοι έως ${wind.toFixed(0)} km/h. Προσοχή σε μετακινούμενα αντικείμενα και παραμονή κοντά σε δέντρα.`
-                });
-            }
-            if (snow >= 3) {
-                events.push({
-                    type: "snow",
-                    level: snow >= 10 ? 3 : 2,
-                    date,
-                    text: `Χιονοπτώσεις (${snow.toFixed(1)} cm). Πιθανή ολισθηρότητα και τοπικοί αποκλεισμοί.`
-                });
-            }
-            if (maxT >= 35) {
-                events.push({
-                    type: "heat",
-                    level: maxT >= 38 ? 3 : 2,
-                    date,
-                    text: `Υψηλές θερμοκρασίες με μέγιστη περίπου ${maxT.toFixed(1)}°C. Προσοχή σε ευπαθείς ομάδες.`
-                });
-            }
-        }
-
-        return events;
-    }
-
-    function renderDangerBox(dangerEvents) {
-        const box = document.getElementById('dangerBox');
-
-        if (!dangerEvents || dangerEvents.length === 0) {
-            box.textContent = "Δεν έχουν εντοπιστεί έντονα φαινόμενα στις επόμενες ~48 ώρες.";
-            return;
-        }
-
-        let html = "";
-
-        dangerEvents.forEach(ev => {
-            const info = PHENOMENON_INFO[ev.type] || null;
-            const sev = ev.level ?? 1;
-
-            html += `
-                <div style="margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid rgba(255,255,255,0.08);">
-                    <div style="font-weight:700;font-size:13px;margin-bottom:2px;">
-                        ${info ? info.icon : "⚠️"} 
-                        ${info ? info.title : "Έντονα φαινόμενα"} 
-                        – Επίπεδο κινδύνου ${sev}
-                    </div>
-                    ${ev.date ? `<div style="font-size:11px;opacity:0.85;margin-bottom:2px;">Ημέρα: ${ev.date}</div>` : ""}
-                    ${ev.text ? `<div style="font-size:11px;opacity:0.9;margin-bottom:4px;">${ev.text}</div>` : ""}
-                    ${info ? `
-                        <ul style="font-size:11px;margin:4px 0 4px 14px;padding:0;">
-                            ${info.tips.map(t => `<li>${t}</li>`).join("")}
-                        </ul>
-                        <a href="${info.link}" target="_blank" style="font-size:11px;color:#00d4ff;text-decoration:none;">
-                            ℹ️ Αναλυτικές οδηγίες Πολιτικής Προστασίας για αυτό το φαινόμενο
-                        </a>
-                    ` : ""}
-                </div>
-            `;
-        });
-
-        html += `
-            <div style="font-size:10px;opacity:0.75;margin-top:4px;">
-                Οι παραπάνω συμβουλές είναι συνοπτικές. Για πλήρη ενημέρωση ακολουθείτε πάντα
-                τις επίσημες οδηγίες της Πολιτικής Προστασίας (civilprotection.gov.gr) και τα μηνύματα 112.
+                <div class="metric-row">Θ: ${min.toFixed(1)}°C – ${max.toFixed(1)}°C</div>
+                <div class="metric-row">Βροχή: ${rain.toFixed(1)} mm</div>
+                <div class="metric-row">Άνεμος: έως ${wind.toFixed(0)} km/h</div>
+                ${snow && snow > 0 ? `<div class="metric-row">Χιόνι: ${snow.toFixed(1)} cm</div>` : ""}
+                <div class="metric-row">Επικινδυνότητα: <b style="color:${sevColor}">${sevLabel}</b></div>
             </div>
         `;
-
-        box.innerHTML = html;
     }
+}
 
-    function renderTimingBox(dangerEvents) {
-        const box = document.getElementById('timingBox');
+function analyzeDangerousConditions(data) {
+    const d = data.daily;
+    const events = [];
 
-        if (!dangerEvents || dangerEvents.length === 0) {
-            box.textContent = "Δεν προκύπτει σημαντική επιδείνωση μέσα στις επόμενες 2–3 ημέρες από τα διαθέσιμα δεδομένα.";
-            return;
+    for (let i = 0; i < Math.min(4, d.time.length); i++) {
+        const date = d.time[i];
+        const maxT = d.temperature_2m_max[i];
+        const rain = d.precipitation_sum[i];
+        const wind = d.wind_speed_10m_max[i];
+        const snow = d.snowfall_sum ? d.snowfall_sum[i] : 0;
+
+        if (rain >= 20) {
+            events.push({
+                type: rain >= 40 ? "flood" : "storm",
+                level: rain >= 40 ? 3 : 2,
+                date,
+                text: `Πολύ βροχερή ημέρα (${rain.toFixed(1)} mm). Αυξημένος κίνδυνος πλημμυρών σε ευαίσθητες περιοχές.`
+            });
         }
-
-        dangerEvents.sort((a,b) => (a.date > b.date ? 1 : -1));
-        const first = dangerEvents[0];
-        const info = PHENOMENON_INFO[first.type] || null;
-
-        box.textContent =
-            `Η επόμενη πιο κρίσιμη φάση φαίνεται γύρω στις ${first.date}. ` +
-            (info ? `${info.icon} ${info.title}. ` : "") +
-            `Προτείνεται έγκαιρη προετοιμασία (έλεγχος αποχετεύσεων, ασφάλιση αντικειμένων, παρακολούθηση ανακοινώσεων Πολιτικής Προστασίας).`;
-    }
-
-    function renderSpecialDaysBox(dangerEvents) {
-        const box = document.getElementById('specialDaysBox');
-
-        if (!dangerEvents || dangerEvents.length === 0) {
-            box.textContent = "Δεν υπάρχουν ιδιαίτερες ημέρες προσοχής με βάση τα τρέχοντα δεδομένα.";
-            return;
+        if (wind >= 65) {
+            events.push({
+                type: "wind",
+                level: wind >= 80 ? 3 : 2,
+                date,
+                text: `Θυελλώδεις άνεμοι έως ${wind.toFixed(0)} km/h. Προσοχή σε μετακινούμενα αντικείμενα και παραμονή κοντά σε δέντρα.`
+            });
         }
-
-        let html = "Ημέρες με αυξημένο ενδιαφέρον:\n\n";
-        dangerEvents.forEach(ev => {
-            const info = PHENOMENON_INFO[ev.type] || {};
-            html += `• ${ev.date}: ${(info.icon || "⚠️")} ${(info.title || "Έντονα φαινόμενα")} – επίπεδο ${ev.level}.\n`;
-        });
-        html += "\nΟι εκτιμήσεις είναι προγνωστικές και μπορεί να αλλάξουν.";
-        box.textContent = html;
-    }
-
-    async function loadForecastOropos() {
-        const analysisEl = document.getElementById('analysisText');
-        const lastUpdate = document.getElementById('lastUpdate');
-
-        try {
-            analysisEl.textContent = '📍 Φόρτωση δεδομένων καιρού...';
-            document.querySelector('h1').textContent = `🌦️ 15ήμερη Πρόγνωση V15 – ${currentName}`;
-
-            const url = `https://api.open-meteo.com/v1/forecast?latitude=${currentLat}&longitude=${currentLon}&hourly=temperature_2m,precipitation_probability,precipitation,weathercode,wind_speed_10m&daily=weathercode,temperature_2m_max,temperature_2m_min,precipitation_sum,wind_speed_10m_max,snowfall_sum&forecast_days=16&current_weather=true&timezone=auto`;
-
-            const res = await safeFetch(url);
-            const data = await res.json();
-            forecastGlobal = data;
-
-            analysisEl.textContent = buildAnalysisText(data);
-            renderComboChart(data);
-            renderDaysGrid(data);
-
-            const dangerEvents = analyzeDangerousConditions(data);
-            renderDangerBox(dangerEvents);
-            renderTimingBox(dangerEvents);
-            updateStatusBarWithDanger(dangerEvents);
-            renderSpecialDaysBox(dangerEvents);
-
-            lastUpdate.textContent = new Date().toLocaleString('el-GR');
-
-            if (dangerEvents.length > 0) {
-                sendNotification(
-                    "🚨 Καιρός – Προσοχή",
-                    `Έντονα φαινόμενα αναμένονται στην περιοχή ${currentName}. Δες οδηγίες προστασίας στην εφαρμογή και στο civilprotection.gov.gr.`
-                );
-            }
-
-        } catch (err) {
-            console.error(err);
-            analysisEl.textContent = '❌ Πρόβλημα φόρτωσης δεδομένων.';
-            document.getElementById('statusBar').innerHTML = '⚠️ Δεν κατέστη δυνατή η ανάλυση καιρού.';
+        if (snow >= 3) {
+            events.push({
+                type: "snow",
+                level: snow >= 10 ? 3 : 2,
+                date,
+                text: `Χιονοπτώσεις (${snow.toFixed(1)} cm). Πιθανή ολισθηρότητα και τοπικοί αποκλεισμοί.`
+            });
+        }
+        if (maxT >= 35) {
+            events.push({
+                type: "heat",
+                level: maxT >= 38 ? 3 : 2,
+                date,
+                text: `Υψηλές θερμοκρασίες με μέγιστη περίπου ${maxT.toFixed(1)}°C. Προσοχή σε ευπαθείς ομάδες.`
+            });
         }
     }
 
-    function toggleMeteogram() {
-        const box = document.getElementById('meteogramBox');
-        const iframe = document.getElementById('meteogramIframe');
-        if (box.style.display === 'none') {
-            box.style.display = '';
-            iframe.src = `https://www.meteociel.fr/cartes_obs/gens_display.php?lat=${currentLat}&lon=${currentLon}&ext=1&run=0&type=0`;
+    return events;
+}
+
+function renderDangerBox(dangerEvents) {
+    const box = document.getElementById('dangerBox');
+
+    if (!dangerEvents || dangerEvents.length === 0) {
+        box.textContent = "Δεν έχουν εντοπιστεί έντονα φαινόμενα στις επόμενες ~48 ώρες.";
+        return;
+    }
+
+    let html = "";
+
+    dangerEvents.forEach(ev => {
+        const info = PHENOMENON_INFO[ev.type] || null;
+        const sev = ev.level ?? 1;
+
+        html += `
+            <div style="margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid rgba(255,255,255,0.08);">
+                <div style="font-weight:700;font-size:13px;margin-bottom:2px;">
+                    ${info ? info.icon : "⚠️"} 
+                    ${info ? info.title : "Έντονα φαινόμενα"} 
+                    – Επίπεδο κινδύνου ${sev}
+                </div>
+                ${ev.date ? `<div style="font-size:11px;opacity:0.85;margin-bottom:2px;">Ημέρα: ${ev.date}</div>` : ""}
+                ${ev.text ? `<div style="font-size:11px;opacity:0.9;margin-bottom:4px;">${ev.text}</div>` : ""}
+                ${info ? `
+                    <ul style="font-size:11px;margin:4px 0 4px 14px;padding:0;">
+                        ${info.tips.map(t => `<li>${t}</li>`).join("")}
+                    </ul>
+                    <a href="${info.link}" target="_blank" style="font-size:11px;color:#00d4ff;text-decoration:none;">
+                        ℹ️ Αναλυτικές οδηγίες Πολιτικής Προστασίας για αυτό το φαινόμενο
+                    </a>
+                ` : ""}
+            </div>
+        `;
+    });
+
+    html += `
+        <div style="font-size:10px;opacity:0.75;margin-top:4px;">
+            Οι παραπάνω συμβουλές είναι συνοπτικές. Για πλήρη ενημέρωση ακολουθείτε πάντα
+            τις επίσημες οδηγίες της Πολιτικής Προστασίας (civilprotection.gov.gr) και τα μηνύματα 112.
+        </div>
+    `;
+
+    box.innerHTML = html;
+}
+
+function renderTimingBox(dangerEvents) {
+    const box = document.getElementById('timingBox');
+
+    if (!dangerEvents || dangerEvents.length === 0) {
+        box.textContent = "Δεν προκύπτει σημαντική επιδείνωση μέσα στις επόμενες 2–3 ημέρες από τα διαθέσιμα δεδομένα.";
+        return;
+    }
+
+    dangerEvents.sort((a,b) => (a.date > b.date ? 1 : -1));
+    const first = dangerEvents[0];
+    const info = PHENOMENON_INFO[first.type] || null;
+
+    box.textContent =
+        `Η επόμενη πιο κρίσιμη φάση φαίνεται γύρω στις ${first.date}. ` +
+        (info ? `${info.icon} ${info.title}. ` : "") +
+        `Προτείνεται έγκαιρη προετοιμασία (έλεγχος αποχετεύσεων, ασφάλιση αντικειμένων, παρακολούθηση ανακοινώσεων Πολιτικής Προστασίας).`;
+}
+
+function renderSpecialDaysBox(dangerEvents) {
+    const box = document.getElementById('specialDaysBox');
+
+    if (!dangerEvents || dangerEvents.length === 0) {
+        box.textContent = "Δεν υπάρχουν ιδιαίτερες ημέρες προσοχής με βάση τα τρέχοντα δεδομένα.";
+        return;
+    }
+
+    let html = "Ημέρες με αυξημένο ενδιαφέρον:\n\n";
+    dangerEvents.forEach(ev => {
+        const info = PHENOMENON_INFO[ev.type] || {};
+        html += `• ${ev.date}: ${(info.icon || "⚠️")} ${(info.title || "Έντονα φαινόμενα")} – επίπεδο ${ev.level}.\n`;
+    });
+    html += "\nΟι εκτιμήσεις είναι προγνωστικές και μπορεί να αλλάξουν.";
+    box.textContent = html;
+}
+
+// ------------- ΦΟΡΤΩΣΗ ΠΡΟΓΝΩΣΗΣ -------------
+async function loadForecastOropos() {
+    const analysisEl = document.getElementById('analysisText');
+    const lastUpdate = document.getElementById('lastUpdate');
+
+    try {
+        analysisEl.textContent = '📍 Φόρτωση δεδομένων καιρού...';
+        document.querySelector('h1').textContent = `🌦️ 15ήμερη Πρόγνωση V15 – ${currentName}`;
+
+        const url = `https://api.open-meteo.com/v1/forecast?latitude=${currentLat}&longitude=${currentLon}&hourly=temperature_2m,precipitation_probability,precipitation,weathercode,wind_speed_10m&daily=weathercode,temperature_2m_max,temperature_2m_min,precipitation_sum,wind_speed_10m_max,snowfall_sum&forecast_days=16&current_weather=true&timezone=auto`;
+
+        const res = await fetch(url);
+        if (!res.ok) {
+            throw new Error(`HTTP ${res.status} (${res.statusText})`);
+        }
+
+        const data = await res.json();
+        if (!data || !data.daily) {
+            throw new Error('Άδειο ή ελλιπές JSON από το Open-Meteo');
+        }
+
+        forecastGlobal = data;
+
+        analysisEl.textContent = buildAnalysisText(data);
+        renderComboChart(data);
+        renderDaysGrid(data);
+
+        const dangerEvents = analyzeDangerousConditions(data);
+        renderDangerBox(dangerEvents);
+        renderTimingBox(dangerEvents);
+        renderSpecialDaysBox(dangerEvents);
+
+        lastUpdate.textContent = new Date().toLocaleString('el-GR');
+
+        if (dangerEvents.length > 0) {
+            sendNotification(
+                "🚨 Καιρός – Προσοχή",
+                `Έντονα φαινόμενα αναμένονται στην περιοχή ${currentName}. Δες οδηγίες προστασίας στην εφαρμογή και στο civilprotection.gov.gr.`
+            );
+        }
+
+        document.getElementById('statusBar').innerHTML =
+            '✅ Η ανάλυση καιρού ολοκληρώθηκε με επιτυχία.';
+
+    } catch (err) {
+        console.error('Σφάλμα φόρτωσης Open-Meteo:', err);
+        analysisEl.textContent = '❌ Πρόβλημα φόρτωσης δεδομένων: ' + err.message;
+        document.getElementById('statusBar').innerHTML =
+            '⚠️ Δεν κατέστη δυνατή η ανάλυση καιρού. (' + err.message + ')';
+    }
+}
+
+// ------------- METEOGRAM -------------
+function toggleMeteogram() {
+    const box = document.getElementById('meteogramBox');
+    const iframe = document.getElementById('meteogramIframe');
+    if (box.style.display === 'none') {
+        box.style.display = '';
+        iframe.src = `https://www.meteociel.fr/cartes_obs/gens_display.php?lat=${currentLat}&lon=${currentLon}&ext=1&run=0&type=0`;
+    } else {
+        box.style.display = 'none';
+    }
+}
+
+function openMeteogramAnalyzer() {
+    const modal = document.getElementById('meteogramAnalyzer');
+    const areaLabel = document.getElementById('meteogramAreaName');
+    const iframeBig = document.getElementById('meteogramIframeBig');
+
+    areaLabel.textContent = currentName;
+    iframeBig.src = `https://www.meteociel.fr/cartes_obs/gens_display.php?lat=${currentLat}&lon=${currentLon}&ext=1&run=0&type=0`;
+
+    modal.style.display = 'flex';
+    updateMeteogramAnalysis();
+}
+
+function closeMeteogramAnalyzer() {
+    const modal = document.getElementById('meteogramAnalyzer');
+    modal.style.display = 'none';
+}
+
+function updateMeteogramAnalysis() {
+    const box = document.getElementById('meteogramAnalysis');
+    const select = document.getElementById('meteogramVarSelect');
+    const type = select.value;
+
+    if (!forecastGlobal || !forecastGlobal.daily) {
+        box.textContent = "Δεν έχουν φορτωθεί ακόμη τα προγνωστικά δεδομένα. Δοκίμασε σε λίγα δευτερόλεπτα.";
+        return;
+    }
+
+    const d = forecastGlobal.daily;
+    let text = "";
+
+    if (type === "temp") {
+        const max15 = Math.max(...d.temperature_2m_max.slice(0,15));
+        const min15 = Math.min(...d.temperature_2m_min.slice(0,15));
+        let hottestIdx = 0;
+        for (let i = 1; i < 15; i++) {
+            if (d.temperature_2m_max[i] > d.temperature_2m_max[hottestIdx]) hottestIdx = i;
+        }
+
+        text += "Θερμοκρασία (συνοπτική εικόνα 15ημέρου):\n\n";
+        text += `• Οι μέγιστες κυμαίνονται περίπου από ${min15.toFixed(1)}°C έως ${max15.toFixed(1)}°C.\n`;
+        text += `• Πιο ζεστή μέρα: γύρω στις ${d.time[hottestIdx]} με μέγιστη ~${d.temperature_2m_max[hottestIdx].toFixed(1)}°C.\n\n`;
+
+        text += "Πρώτες 5 ημέρες:\n";
+        for (let i = 0; i < Math.min(5, d.time.length); i++) {
+            const tmin = d.temperature_2m_min[i];
+            const tmax = d.temperature_2m_max[i];
+            let info = "";
+            if (tmax >= 35) info = "πολύ ζέστη / πιθανός καύσωνας";
+            else if (tmax >= 30) info = "θερμή ημέρα";
+            else if (tmax <= 5) info = "ψυχρή ημέρα";
+            else info = "ήπιες θερμοκρασίες";
+            text += `• ${d.time[i]}: ${tmin.toFixed(1)}°C – ${tmax.toFixed(1)}°C (${info}).\n`;
+        }
+    } else if (type === "rain") {
+        const rainArr = d.precipitation_sum.slice(0,15);
+        const totalRain = rainArr.reduce((a,b)=>a+b,0);
+        let maxIdx = 0;
+        for (let i = 1; i < rainArr.length; i++) {
+            if (rainArr[i] > rainArr[maxIdx]) maxIdx = i;
+        }
+
+        text += "Βροχόπτωση (συνολική εικόνα):\n\n";
+        text += `• Συνολική βροχόπτωση 15ημέρου: περίπου ${totalRain.toFixed(1)} mm.\n`;
+        text += `• Πιο βροχερή μέρα: ${d.time[maxIdx]} με ~${rainArr[maxIdx].toFixed(1)} mm.\n\n`;
+
+        text += "Πρώτες 5 ημέρες:\n";
+        for (let i = 0; i < Math.min(5, rainArr.length); i++) {
+            let desc = "στεγνή ή με λίγες σταγόνες";
+            if (rainArr[i] >= 20) desc = "ισχυρές βροχές / πιθανές καταιγίδες";
+            else if (rainArr[i] >= 5) desc = "μέτριες βροχές";
+            else if (rainArr[i] > 0) desc = "ασθενείς βροχές";
+            text += `• ${d.time[i]}: ${rainArr[i].toFixed(1)} mm (${desc}).\n`;
+        }
+    } else if (type === "wind") {
+        const windArr = d.wind_speed_10m_max.slice(0,15);
+        let maxIdx = 0;
+        for (let i = 1; i < windArr.length; i++) {
+            if (windArr[i] > windArr[maxIdx]) maxIdx = i;
+        }
+        const maxWind = windArr[maxIdx];
+
+        text += "Άνεμος (ριπές):\n\n";
+        text += `• Μέγιστη τιμή ανέμου στο 15ήμερο: περίπου ${maxWind.toFixed(0)} km/h στις ${d.time[maxIdx]}.\n\n`;
+        text += "Πρώτες 5 ημέρες:\n";
+        for (let i = 0; i < Math.min(5, windArr.length); i++) {
+            let desc = "ήπιος έως μέτριος";
+            if (windArr[i] >= 80) desc = "θυελλώδεις ριπές, αυξημένη προσοχή";
+            else if (windArr[i] >= 60) desc = "ισχυροί άνεμοι";
+            else if (windArr[i] >= 40) desc = "ενισχυμένοι άνεμοι";
+            text += `• ${d.time[i]}: έως ${windArr[i].toFixed(0)} km/h (${desc}).\n`;
+        }
+    } else {
+        // overall
+        const tmaxArr = d.temperature_2m_max.slice(0,15);
+        const tminArr = d.temperature_2m_min.slice(0,15);
+        const rainArr = d.precipitation_sum.slice(0,15);
+        const windArr = d.wind_speed_10m_max.slice(0,15);
+
+        const maxT = Math.max(...tmaxArr);
+        const minT = Math.min(...tminArr);
+        const totalRain = rainArr.reduce((a,b)=>a+b,0);
+        const maxWind = Math.max(...windArr);
+
+        text += "Γενική εικόνα καιρού (με βάση το meteogram και τα δεδομένα μοντέλου):\n\n";
+        text += `• Θερμοκρασίες: από περίπου ${minT.toFixed(1)}°C (οι πιο κρύες τιμές) έως ${maxT.toFixed(1)}°C (οι πιο ζεστές).\n`;
+        text += `• Συνολική βροχόπτωση 15ημέρου: ~${totalRain.toFixed(1)} mm.\n`;
+        text += `• Μέγιστος άνεμος: περίπου ${maxWind.toFixed(0)} km/h.\n\n`;
+
+        if (maxT >= 35) {
+            text += "Αέρια μάζα στο 850 hPa: θερμή μάζα, πιθανές συνθήκες καύσωνα.\n";
+        } else if (minT <= 2) {
+            text += "Αέρια μάζα στο 850 hPa: αρκετά ψυχρή, πιθανότητα για παγετό σε ορεινά/ημιορεινά.\n";
         } else {
-            box.style.display = 'none';
-        }
-    }
-
-    function openMeteogramAnalyzer() {
-        const modal = document.getElementById('meteogramAnalyzer');
-        const areaLabel = document.getElementById('meteogramAreaName');
-        const iframeBig = document.getElementById('meteogramIframeBig');
-
-        areaLabel.textContent = currentName;
-        iframeBig.src = `https://www.meteociel.fr/cartes_obs/gens_display.php?lat=${currentLat}&lon=${currentLon}&ext=1&run=0&type=0`;
-
-        modal.style.display = 'flex';
-        updateMeteogramAnalysis();
-    }
-
-    function closeMeteogramAnalyzer() {
-        const modal = document.getElementById('meteogramAnalyzer');
-        modal.style.display = 'none';
-    }
-
-    function updateMeteogramAnalysis() {
-        const box = document.getElementById('meteogramAnalysis');
-        const select = document.getElementById('meteogramVarSelect');
-        const type = select.value;
-
-        if (!forecastGlobal || !forecastGlobal.daily) {
-            box.textContent = "Δεν έχουν φορτωθεί ακόμη τα προγνωστικά δεδομένα. Δοκίμασε σε λίγα δευτερόλεπτα.";
-            return;
+            text += "Αέρια μάζα στο 850 hPa: μέτρια, τυπική εποχική κατάσταση.\n";
         }
 
-        const d = forecastGlobal.daily;
-        let text = "";
+        const strongRain = rainArr.some(r => r >= 20);
+        const veryStrongRain = rainArr.some(r => r >= 40);
+        const strongWind = windArr.some(w => w >= 65);
 
-        // ΣΥΓΚΕΚΡΙΜΕΝΕΣ ΑΝΑΛΥΣΕΙΣ
-        if (type === "temp") {
-            const max15 = Math.max(...d.temperature_2m_max.slice(0,15));
-            const min15 = Math.min(...d.temperature_2m_min.slice(0,15));
-            let hottestIdx = 0;
-            for (let i = 1; i < 15; i++) {
-                if (d.temperature_2m_max[i] > d.temperature_2m_max[hottestIdx]) hottestIdx = i;
-            }
-
-            text += "Θερμοκρασία (συνοπτική εικόνα 15ημέρου):\n\n";
-            text += `• Οι μέγιστες κυμαίνονται περίπου από ${min15.toFixed(1)}°C έως ${max15.toFixed(1)}°C.\n`;
-            text += `• Πιο ζεστή μέρα: γύρω στις ${d.time[hottestIdx]} με μέγιστη ~${d.temperature_2m_max[hottestIdx].toFixed(1)}°C.\n\n`;
-
-            text += "Πρώτες 5 ημέρες (όπως φαίνονται και στο meteogram):\n";
-            for (let i = 0; i < Math.min(5, d.time.length); i++) {
-                const tmin = d.temperature_2m_min[i];
-                const tmax = d.temperature_2m_max[i];
-                let info = "";
-                if (tmax >= 35) info = "πολύ ζέστη / πιθανός καύσωνας";
-                else if (tmax >= 30) info = "θερμή ημέρα";
-                else if (tmax <= 5) info = "ψυχρή ημέρα";
-                else info = "ήπιες θερμοκρασίες";
-                text += `• ${d.time[i]}: ${tmin.toFixed(1)}°C – ${tmax.toFixed(1)}°C (${info}).\n`;
-            }
+        text += "\nΕκτίμηση επικινδυνότητας από το διάγραμμα:\n";
+        if (veryStrongRain || strongWind || maxT >= 38) {
+            text += "• Υπάρχουν ενδείξεις για επεισόδια με έντονα φαινόμενα (δυνατές βροχές/καταιγίδες ή πολύ ισχυρούς ανέμους ή έντονη ζέστη).\n";
+        } else if (strongRain || maxWind >= 50) {
+            text += "• Κατά περιόδους εμφανίζονται πιο «γεμάτες» κακοκαιρίες, αλλά όχι σε ακραία επίπεδα.\n";
+        } else {
+            text += "• Τα φαινόμενα φαίνονται γενικά ήπια έως μέτρια, χωρίς ιδιαίτερα επικίνδυνες καταστάσεις.\n";
         }
-
-        if (type === "rain") {
-            const rainArr = d.precipitation_sum.slice(0,15);
-            const totalRain = rainArr.reduce((a,b)=>a+b,0);
-            let maxIdx = 0;
-            for (let i = 1; i < rainArr.length; i++) {
-                if (rainArr[i] > rainArr[maxIdx]) maxIdx = i;
-            }
-
-            text += "Βροχόπτωση (συνολική εικόνα):\n\n";
-            text += `• Συνολική βροχόπτωση 15ημέρου: περίπου ${totalRain.toFixed(1)} mm.\n`;
-            text += `• Πιο βροχερή μέρα: ${d.time[maxIdx]} με ~${rainArr[maxIdx].toFixed(1)} mm.\n\n`;
-
-            text += "Πρώτες 5 ημέρες:\n";
-            for (let i = 0; i < Math.min(5, rainArr.length); i++) {
-                let desc = "στεγνή ή με λίγες σταγόνες";
-                if (rainArr[i] >= 20) desc = "ισχυρές βροχές / πιθανές καταιγίδες";
-                else if (rainArr[i] >= 5) desc = "μέτριες βροχές";
-                else if (rainArr[i] > 0) desc = "ασθενείς βροχές";
-                text += `• ${d.time[i]}: ${rainArr[i].toFixed(1)} mm (${desc}).\n`;
-            }
-        }
-
-        if (type === "wind") {
-            const windArr = d.wind_speed_10m_max.slice(0,15);
-            let maxIdx = 0;
-            for (let i = 1; i < windArr.length; i++) {
-                if (windArr[i] > windArr[maxIdx]) maxIdx = i;
-            }
-            const maxWind = windArr[maxIdx];
-
-            text += "Άνεμος (ριπές):\n\n";
-            text += `• Μέγιστη τιμή ανέμου στο 15ήμερο: περίπου ${maxWind.toFixed(0)} km/h στις ${d.time[maxIdx]}.\n\n`;
-            text += "Πρώτες 5 ημέρες:\n";
-            for (let i = 0; i < Math.min(5, windArr.length); i++) {
-                let desc = "ήπιος έως μέτριος";
-                if (windArr[i] >= 80) desc = "θυελλώδεις ριπές, αυξημένη προσοχή";
-                else if (windArr[i] >= 60) desc = "ισχυροί άνεμοι";
-                else if (windArr[i] >= 40) desc = "ενισχυμένοι άνεμοι";
-                text += `• ${d.time[i]}: έως ${windArr[i].toFixed(0)} km/h (${desc}).\n`;
-            }
-        }
-
-        if (type === "overall") {
-            const tmaxArr = d.temperature_2m_max.slice(0,15);
-            const tminArr = d.temperature_2m_min.slice(0,15);
-            const rainArr = d.precipitation_sum.slice(0,15);
-            const windArr = d.wind_speed_10m_max.slice(0,15);
-
-            const maxT = Math.max(...tmaxArr);
-            const minT = Math.min(...tminArr);
-            const totalRain = rainArr.reduce((a,b)=>a+b,0);
-            const maxWind = Math.max(...windArr);
-
-            text += "Γενική εικόνα καιρού (με βάση το meteogram και τα δεδομένα μοντέλου):\n\n";
-            text += `• Θερμοκρασίες: από περίπου ${minT.toFixed(1)}°C (οι πιο κρύες τιμές) έως ${maxT.toFixed(1)}°C (οι πιο ζεστές).\n`;
-            text += `• Συνολική βροχόπτωση 15ημέρου: ~${totalRain.toFixed(1)} mm.\n`;
-            text += `• Μέγιστος άνεμος: περίπου ${maxWind.toFixed(0)} km/h.\n\n`;
-
-            // Προσέγγιση για αέρια μάζα 850 hPa
-            if (maxT >= 35) {
-                text += "Αέρια μάζα στο 850 hPa: δείχνει θερμή μάζα, ιδίως στις θερμές ημέρες (πιθανές συνθήκες καύσωνα κοντά στην επιφάνεια).\n";
-            } else if (minT <= 2) {
-                text += "Αέρια μάζα στο 850 hPa: αρκετά ψυχρή, ιδίως τις πιο κρύες νύχτες – πιθανότητα για παγετό σε ορεινά/ημιορεινά.\n";
-            } else {
-                text += "Αέρια μάζα στο 850 hPa: μέτρια, τυπική εποχική κατάσταση χωρίς ακραία ψυχρές ή θερμές εισβολές.\n";
-            }
-
-            // Εκτίμηση επικινδυνότητας
-            const strongRain = rainArr.some(r => r >= 20);
-            const veryStrongRain = rainArr.some(r => r >= 40);
-            const strongWind = windArr.some(w => w >= 65);
-
-            text += "\nΕκτίμηση επικινδυνότητας από το διάγραμμα:\n";
-            if (veryStrongRain || strongWind || maxT >= 38) {
-                text += "• Υπάρχουν ενδείξεις για επεισόδια με έντονα φαινόμενα (δυνατές βροχές/καταιγίδες ή πολύ ισχυρούς ανέμους ή έντονη ζέστη).\n";
-            } else if (strongRain || maxWind >= 50) {
-                text += "• Κατά περιόδους εμφανίζονται πιο «γεμάτες» κακοκαιρίες, αλλά όχι σε ακραία επίπεδα.\n";
-            } else {
-                text += "• Τα φαινόμενα φαίνονται γενικά ήπια έως μέτρια, χωρίς ιδιαίτερα επικίνδυνες καταστάσεις.\n";
-            }
-
-            text += "\nΣυνοπτική πρόγνωση:\n";
-            if (maxT >= 35 && totalRain < 10) {
-                text += "• Κυριαρχεί ζεστό, σχετικά ξηρό μοτίβο – πιο πολύ θέμα ζέστης παρά κακοκαιρίας.\n";
-            } else if (totalRain > 40) {
-                text += "• Η περίοδος έχει αρκετές διαταραχές με βροχές/καταιγίδες. Σε ευαίσθητες περιοχές χρειάζεται προσοχή για τοπικές πλημμύρες.\n";
-            } else if (maxWind >= 65) {
-                text += "• Ο άνεμος παίζει σημαντικό ρόλο, με διαστήματα θυελλωδών ριπών, ιδίως σε εκτεθειμένες περιοχές.\n";
-            } else {
-                text += "• Γενικά εποχικός καιρός, με εναλλαγές ηλιοφάνειας/συννεφιάς και τοπικές βροχές.\n";
-            }
-        }
-
-        text += "\n\nΤο κείμενο είναι βοηθητικό και βασίζεται στο ίδιο προγνωστικό πακέτο με το meteogram. Για επίσημες προειδοποιήσεις: ΕΜΥ, Πολιτική Προστασία, 112.";
-        box.textContent = text;
+        text += "\nΣυνοπτική πρόγνωση: γενικά εποχικός καιρός με εναλλαγές ηλιοφάνειας/συννεφιάς και τοπικές βροχές.";
     }
 
-    function shareViber() {
-        alert("Μπορείς να μοιραστείς το link αυτής της σελίδας μέσω Viber.");
-    }
-    function shareFacebook() {
-        alert("Μπορείς να μοιραστείς το link αυτής της σελίδας μέσω Facebook.");
-    }
-    function copySummary() {
-        const txt = document.getElementById('analysisText').textContent;
-        navigator.clipboard.writeText(txt).then(() => {
-            alert("Αντιγράφηκε η σύνοψη στο πρόχειρο.");
-        }).catch(()=>{});
-    }
+    text += "\n\nΤο κείμενο είναι βοηθητικό και βασίζεται στο ίδιο προγνωστικό πακέτο με το meteogram. Για επίσημες προειδοποιήσεις: ΕΜΥ, Πολιτική Προστασία, 112.";
+    box.textContent = text;
+}
 
-    function toggleChat(){
-        const box = document.getElementById('chatbox');
-        box.style.display = box.style.display === 'flex' ? 'none' : 'flex';
-    }
-    function sendChat(){
-        const input = document.getElementById('chatInput');
-        const log = document.getElementById('chatLog');
-        if (!input.value.trim()) return;
-        log.innerHTML += `<div><b>Εσύ:</b> ${input.value}</div>`;
-        log.scrollTop = log.scrollHeight;
-        input.value = "";
-    }
+// ------------- SHARE -------------
+function shareViber(){
+    alert("Μπορείς να μοιραστείς το link αυτής της σελίδας μέσω Viber.");
+}
+function shareFacebook(){
+    alert("Μπορείς να μοιραστείς το link αυτής της σελίδας μέσω Facebook.");
+}
+function copySummary(){
+    const txt = document.getElementById('analysisText').textContent;
+    navigator.clipboard.writeText(txt).then(()=>alert("Αντιγράφηκε η σύνοψη στο πρόχειρο.")).catch(()=>{});
+}
 
-    function populateAreas() {
-        const select = document.getElementById('areaSelect');
-        select.innerHTML = "";
-        AREAS.forEach((area, idx) => {
-            const opt = document.createElement('option');
-            opt.value = idx;
-            opt.textContent = area.name;
-            if (area.name === 'Ωρωπός') opt.selected = true;
-            select.appendChild(opt);
-        });
+// (αφήνω το απλό τοπικό chat όπως είναι, δεν πειράζει)
+function toggleChat(){
+    const box = document.getElementById('chatbox');
+    box.style.display = box.style.display === 'flex' ? 'none' : 'flex';
+}
+function sendChat(){
+    const input = document.getElementById('chatInput');
+    const log = document.getElementById('chatLog');
+    if (!input.value.trim()) return;
+    log.innerHTML += `<div><b>Εσύ:</b> ${input.value}</div>`;
+    log.scrollTop = log.scrollHeight;
+    input.value = "";
+}
 
-        select.addEventListener('change', () => {
-            const idx = parseInt(select.value, 10);
-            const area = AREAS[idx];
-            currentLat = area.lat;
-            currentLon = area.lon;
-            currentName = area.name;
-            loadForecastOropos();
-        });
-    }
+// ------------- AREAS -------------
+function populateAreas() {
+    const select = document.getElementById('areaSelect');
+    select.innerHTML = "";
+    AREAS.forEach((area, idx) => {
+        const opt = document.createElement('option');
+        opt.value = idx;
+        opt.textContent = area.name;
+        if (area.name === 'Ωρωπός') opt.selected = true;
+        select.appendChild(opt);
+    });
 
-    document.addEventListener('DOMContentLoaded', () => {
-        populateAreas();
-        initNotifications();
+    select.addEventListener('change', () => {
+        const idx = parseInt(select.value, 10);
+        const area = AREAS[idx];
+        currentLat = area.lat;
+        currentLon = area.lon;
+        currentName = area.name;
         loadForecastOropos();
     });
+}
+
+// ------------- INIT -------------
+document.addEventListener('DOMContentLoaded', () => {
+    populateAreas();
+    initNotifications();
+    loadForecastOropos();
+});
 </script>
 </body>
 </html>
